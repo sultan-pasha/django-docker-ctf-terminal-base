@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CFT Challenge Lap</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
+    <style>
+        body { 
+            background: #121212; 
+            color: #ffffff; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            padding: 30px; 
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        #status-indicator {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            background-color: #d32f2f;
+        }
+        #terminal-container { 
+            width: 100%; 
+            height: 480px; 
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>CFT Challenge lap Is starting - good luck</h2>
+        <div id="status-indicator">Connecting...</div>
+    </div>
+
+    <div id="terminal-container"></div>
+
+    <script>
+        const statusEl = document.getElementById('status-indicator');
+
+        const term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#1e1e1e',
+                foreground: '#ffffff'
+            },
+            fontFamily: 'monospace',
+            fontSize: 15
+        });
+        
+        term.open(document.getElementById('terminal-container'));
+        term.write('connecting for your CFT Server...\r\n');
+        const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+        const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/terminal/`);
+
+        socket.onopen = () => {
+            statusEl.innerText = "Connected";
+            statusEl.style.backgroundColor = "#2e7d32";
+            term.write('welcome in Your CFT Challenge:\r\n\n');
+        };
+
+        socket.onmessage = (event) => {
+            const payload = JSON.parse(event.data);
+            term.write(payload.data);
+        };
+
+        term.onData((data) => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send(jsonOutput = JSON.stringify({ data: data }));
+            }
+        });
+
+        socket.onclose = () => {
+            statusEl.innerHTML = "<a href='/' style = 'color:white; text-decoration:none;' >Reconnect</a>";
+            statusEl.style.backgroundColor = "#c62828";
+            term.write('\r\n\n[System Notification] Session closed and container safely reaped.');
+        };
+    </script>
+</body>
+</html>
