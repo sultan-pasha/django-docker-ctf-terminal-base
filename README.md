@@ -16,3 +16,8 @@ This repository contains the foundation and core engine of an on-premises Cybers
    ```bash
    source env/bin/activate
    pip install -r requirements.txt
+
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) file for details.
